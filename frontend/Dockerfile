@@ -1,7 +1,6 @@
-# Frontend Dockerfile
-FROM node:18
+FROM node:14
 WORKDIR /app
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile 
 COPY . .
-RUN npm install
-RUN npm run build
-CMD ["npm", "start"]
+CMD ["yarn", "start"]

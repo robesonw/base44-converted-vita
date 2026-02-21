@@ -1,6 +1,20 @@
-# Backend Dockerfile
+# Use the latest Node.js image
 FROM node:18
+
+# Set the working directory
 WORKDIR /app
-COPY . .
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install dependencies
 RUN npm install
-CMD ["npm", "start"]
+
+# Copy the rest of the app
+COPY . .
+
+# Build the TypeScript code
+RUN npm run build
+
+# Start the app
+CMD [ "node", "dist/index.js" ]
