@@ -1,0 +1,1 @@
+{ "name": "VitaPlate App", "dockerComposeFile": "../docker-compose.yml", "service": "frontend", "workspaceFolder": "/app", "settings": { "terminal.integrated.shell.linux": "/bin/bash" }, "extensions": ["ms-azuretools.vscode-dockers","esbenp.prettier-vscode"] }
