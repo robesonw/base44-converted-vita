@@ -1,0 +1,1 @@
+import axios from 'axios';\n\nexport const invokeLLM = async ({ prompt, systemPrompt, jsonSchema }) => {\n  const response = await axios.post(process.env.AI_PROVIDER, {\n    prompt,\n    systemPrompt,\n    jsonSchema\n  }, {\n    headers: {\n      'Authorization': `Bearer ${process.env.AI_API_KEY}`\n    }\n  });\n  return response.data;\n};

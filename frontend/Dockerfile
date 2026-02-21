@@ -1,6 +1,30 @@
-FROM node:14
+# Use official Node.js image as parent image
+FROM node:alpine AS builder
+
+# Set working directory
 WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile 
+
+# Install dependencies
+COPY package*.json ./
+
+RUN npm install
+
+# Copy source files
 COPY . .
-CMD ["yarn", "start"]
+
+# Build the application
+RUN npm run build
+
+# Production image
+FROM node:alpine AS runner
+
+WORKDIR /app
+
+# Copy built assets from builder stage
+COPY --from=builder /app .
+
+# Expose the app port
+EXPOSE 3000
+
+# Start the application
+CMD ["npm", "start"]
