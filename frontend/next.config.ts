@@ -1,10 +1,1 @@
-import { createNextConfig } from 'next';
-
-const nextConfig = {
-  reactStrictMode: true,
-  experimental: {
-    appDir: true,
-  },
-};
-
-export default createNextConfig(nextConfig);
+import { defineConfig } from 'next';\n\nexport default defineConfig({\n  reactStrictMode: true,\n  env: {\n    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,\n  }\n});

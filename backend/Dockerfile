@@ -1,1 +1,16 @@
-# Stage 1 - Build\nFROM node:16 AS build\nWORKDIR /app\nCOPY package.json ./\nCOPY package-lock.json ./\nRUN npm install\nCOPY . .\nRUN npm run build\n\n# Stage 2 - Run\nFROM node:16\nWORKDIR /app\nCOPY --from=build /app/dist ./dist\nCOPY package.json ./\nRUN npm install --production\nCMD ["node", "dist/index.js"]
+# syntax=docker/dockerfile:1.0.0-experimental
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+COPY package*.json ./
+RUN npm install --production
+USER node
+EXPOSE 4000
+CMD ["node", "dist/index.js"]

@@ -1,1 +1,43 @@
-version: '3.8'\nservices: \n  backend: \n    build: ./backend \n    environment: \n      - DATABASE_URL=postgres://user:password@postgres:5432/dbname \n      - JWT_SECRET=your_jwt_secret \n      - AI_PROVIDER=your_ai_provider \n      - AI_MODEL=your_ai_model \n      - AI_API_KEY=your_ai_api_key \n    ports: \n      - '4000:4000' \n    depends_on: \n      - postgres \n  postgres: \n    image: postgres:16 \n    environment: \n      POSTGRES_DB: dbname \n      POSTGRES_USER: user \n      POSTGRES_PASSWORD: password \n    ports: \n      - '5432:5432' \n  frontend: \n    build: ./frontend \n    ports: \n      - '3000:3000'
+version: '3.8'
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: db
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://user:pass@postgres:5432/db
+      JWT_SECRET: your_jwt_secret
+      JWT_EXPIRES_IN: 7d
+      CORS_ORIGIN: http://localhost:3000
+      AI_PROVIDER: openai
+      AI_MODEL: gpt-4
+      AI_API_KEY: your_api_key
+      UPLOAD_DIR: /uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"

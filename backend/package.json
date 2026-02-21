@@ -1,1 +1,29 @@
-{\n  "name": "backend",\n  "version": "1.0.0",\n  "main": "dist/index.js",\n  "scripts": {\n    "dev": "ts-node-dev src/index.ts",\n    "build": "tsc",\n    "start": "node dist/index.js"\n  },\n  "dependencies": {\n    "bcryptjs": "^2.4.3",\n    "cors": "^2.8.5",\n    "dotenv": "^10.0.0",\n    "express": "^5.0.0",\n    "jsonwebtoken": "^8.5.1",\n    "prisma": "^3.6.0",\n    "@prisma/client": "^3.6.0"\n  },\n  "devDependencies": {\n    "ts-node": "^10.0.0",\n    "ts-node-dev": "^1.1.8",\n    "typescript": "^4.5.2"\n  }\n}
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node-dev src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "ts-node prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^4.0.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^5.0.0",
+    "express-rate-limit": "^5.2.6",
+    "helmet": "^5.0.2",
+    "jsonwebtoken": "^8.5.1",
+    "multer": "^1.4.3",
+    "prisma": "^4.0.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.0.0",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.0.0"
+  }
+}

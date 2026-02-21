@@ -1,1 +1,17 @@
-import { Router } from 'express';\nimport multer from 'multer';\nimport path from 'path';\nimport fs from 'fs';\n\nconst router = Router();\nconst upload = multer({ dest: 'uploads/' });\n\nrouter.post('/', upload.single('file'), (req, res) => {\n  res.send({ filename: req.file.filename });\n});\n\nrouter.get('/:filename', (req, res) => {\n  const { filename } = req.params;\n  const filePath = path.join(__dirname, '..', 'uploads', filename);\n  if (fs.existsSync(filePath)) {\n    res.sendFile(filePath);\n  } else {\n    res.status(404).send('File not found');\n  }\n});\n\nexport default router;
+import { Router } from 'express';
+import multer from 'multer';
+import path from 'path';
+
+const upload = multer({ dest: process.env.UPLOAD_DIR });
+const router = Router();
+
+router.post('/', upload.single('file'), (req, res) => {
+  res.json({ filePath: req.file.path });
+});
+
+router.get('/:filename', (req, res) => {
+  const filename = req.params.filename;
+  res.sendFile(path.join(process.env.UPLOAD_DIR, filename));
+});
+
+export default router;

@@ -1,0 +1,1 @@
+import { AuthProvider } from '@/contexts/AuthContext';\nimport Layout from '@/components/Layout';\n\nconst RootLayout = ({ children }) => {\n  return (\n    <AuthProvider>\n      <Layout>{children}</Layout>\n    </AuthProvider>\n  );\n};\n\nexport default RootLayout;
