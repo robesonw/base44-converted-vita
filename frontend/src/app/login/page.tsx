@@ -1,1 +1,24 @@
-import React, { useState } from 'react';\nimport { useAuthContext } from '@/contexts/AuthContext';\n\nconst LoginPage = () => {\n  const { login } = useAuthContext();\n  const [email, setEmail] = useState('');\n  const [password, setPassword] = useState('');\n  const [error, setError] = useState('');\n\n  const handleSubmit = async (event: React.FormEvent) => {\n    event.preventDefault();\n    try {\n      await login(email, password);\n    } catch (err) {\n      setError('Login failed');\n    }\n  };\n\n  return (\n    <div>\n      <h1>Login</h1>\n      <form onSubmit={handleSubmit}>\n        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" required />\n        <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" required />\n        <button type="submit">Login</button>\n        {error && <p>{error}</p>}\n      </form>\n      <a href="/register">Register</a>\n    </div>\n  );\n};\n\nexport default LoginPage;
+import React, { useState } from 'react';
+import { useAuthContext } from '@/contexts/AuthContext';
+
+const LoginPage = () => {
+  const { login } = useAuthContext();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await login(email, password);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+      <button type="submit">Login</button>
+      <Link href="/register">Register</Link>
+    </form>
+  );
+};
+
+export default LoginPage;

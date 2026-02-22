@@ -1,1 +1,11 @@
-export interface InvokeAIRequest {\n  prompt: string;\n  systemPrompt?: string;\n  jsonSchema?: any;\n}\n\nexport const invokeAI = async ({ prompt, systemPrompt, jsonSchema }: InvokeAIRequest): Promise<string | object> => {\n  const response = await fetch(`/api/ai/invoke`, {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json'\n    },\n    body: JSON.stringify({ prompt, systemPrompt, jsonSchema })\n  });\n\n  if (!response.ok) {\n    throw new Error('Failed to invoke AI');\n  }\n\n  return await response.json();\n};
+const invokeAI = async ({ prompt, systemPrompt, jsonSchema }: { prompt: string, systemPrompt?: string, jsonSchema?: Object }): Promise<string | object> => {
+  const response = await fetch('/api/ai/invoke', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ prompt, systemPrompt, jsonSchema }),
+  });
+  if (!response.ok) throw new Error('Error invoking AI');
+  return response.json();
+};
+
+export { invokeAI };

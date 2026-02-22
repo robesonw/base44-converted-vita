@@ -1,43 +1,40 @@
-version: '3.8'
+version: '3'
 services:
   postgres:
     image: postgres:16-alpine
+    restart: always
     environment:
       POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: db
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "user"]
+      test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
       retries: 5
-
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://user:password@postgres:5432/mydb
+      - JWT_SECRET=mysecret
+      - CORS_ORIGIN=http://localhost:3000
     depends_on:
       - postgres
-    environment:
-      DATABASE_URL: postgresql://user:pass@postgres:5432/db
-      JWT_SECRET: your_jwt_secret
-      JWT_EXPIRES_IN: 7d
-      CORS_ORIGIN: http://localhost:3000
-      AI_PROVIDER: openai
-      AI_MODEL: gpt-4
-      AI_API_KEY: your_api_key
-      UPLOAD_DIR: /uploads
-
+    ports:
+      - "4000:4000"
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
     depends_on:
       - backend
-
   nginx:
-    image: nginx
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    image: nginx:alpine
     ports:
       - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend

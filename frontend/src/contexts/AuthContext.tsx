@@ -1,1 +1,29 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';\nimport { apiFetch, useAuth } from '@/lib/api';\n\nconst AuthContext = createContext<any>(null);\n\nexport const AuthProvider = ({ children }) => {\n  const { user, loading, login, register, logout } = useAuth();\n\n  useEffect(() => {\n    const token = localStorage.getItem('token');\n    if (token) {\n      apiFetch('/api/auth/refresh').catch(logout);\n    }\n  }, []);\n\n  if (loading) return <div>Loading...</div>;\n\n  return (\n    <AuthContext.Provider value={{ user, login, register, logout }}>\n      {children}\n    </AuthContext.Provider>\n  );\n};\n\nexport const useAuthContext = () => useContext(AuthContext);
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useAuth } from '@/lib/api';
+
+const AuthContext = createContext(null);
+
+export const AuthProvider = ({ children }) => {
+  const [authState, setAuthState] = useState({ user: null, loading: true });
+  const { login, logout, register, refreshToken } = useAuth();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await refreshToken();
+        setAuthState({ user, loading: false });
+      } catch {
+        setAuthState({ user: null, loading: false });
+      }
+    };
+    fetchUser();
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ authState, login, logout, register }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuthContext = () => useContext(AuthContext);

@@ -1,1 +1,79 @@
-export type ApiError = {\n  message: string;\n};\n\nexport const apiFetch = async <T>(path: string, options?: RequestInit): Promise<T> => {\n  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {\n    ...options,\n    headers: {\n      ...options?.headers,\n      'Authorization': `Bearer ${localStorage.getItem('token')}`\n    }\n  });\n\n  if (!response.ok) {\n    const error: ApiError = await response.json();\n    throw new Error(error.message);\n  }\n\n  return response.json() as Promise<T>;\n};\n\ninterface User {\n  id: string;\n  email: string;\n  name: string;\n}\n\nexport const useAuth = () => {\n  const [user, setUser] = useState<User | null>(null);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    const token = localStorage.getItem('token');\n    if (token) {\n      apiFetch<User>(\n        '/api/auth/me'\n      ).then(setUser).catch(() => setUser(null)).finally(() => setLoading(false));\n    } else {\n      setLoading(false);\n    }\n  }, []);\n\n  const login = (email: string, password: string) => {\n    return apiFetch<{ token: string }>('/api/auth/login', {\n      method: 'POST',\n      body: JSON.stringify({ email, password }),\n      headers: { 'Content-Type': 'application/json' }\n    }).then(data => {\n      localStorage.setItem('token', data.token);\n      return apiFetch<User>('/api/auth/me');\n    }).then(setUser);\n  };\n\n  const register = (email: string, password: string, name: string) => {\n    return apiFetch<{ token: string }>('/api/auth/register', {\n      method: 'POST',\n      body: JSON.stringify({ email, password, name }),\n      headers: { 'Content-Type': 'application/json' }\n    }).then(data => {\n      localStorage.setItem('token', data.token);\n      return apiFetch<User>('/api/auth/me');\n    }).then(setUser);\n  };\n\n  const logout = () => {\n    localStorage.removeItem('token');\n    setUser(null);\n  };\n\n  return { user, loading, login, register, logout };\n};\n\nexport const useEntityList = (filters?: any) => {\n  const [data, setData] = useState<any[]>([]);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState<string | null>(null);\n\n  useEffect(() => {\n    apiFetch<any[]>('/api/entities', {\n      method: 'GET',\n      body: JSON.stringify(filters),\n      headers: { 'Content-Type': 'application/json' }\n    }).then(setData).catch(err => {\n      setError(err.message);\n    }).finally(() => setLoading(false));\n  }, [filters]);\n\n  return { data, loading, error };\n};\n\nexport const useEntityCreate = () => {\n  const [loading, setLoading] = useState(false);\n  const [error, setError] = useState<string | null>(null);\n\n  const create = (entity: any) => {\n    setLoading(true);\n    return apiFetch<any>('/api/entities', {\n      method: 'POST',\n      body: JSON.stringify(entity),\n      headers: { 'Content-Type': 'application/json' }\n    }).catch(err => {\n      setError(err.message);\n    }).finally(() => setLoading(false));\n  };\n\n  return { create, loading, error };\n};\n\nexport const useEntityUpdate = () => {\n  const [loading, setLoading] = useState(false);\n  const [error, setError] = useState<string | null>(null);\n\n  const update = (entityId: string, entity: any) => {\n    setLoading(true);\n    return apiFetch<any>(`/api/entities/${entityId}`, {\n      method: 'PUT',\n      body: JSON.stringify(entity),\n      headers: { 'Content-Type': 'application/json' }\n    }).catch(err => {\n      setError(err.message);\n    }).finally(() => setLoading(false));\n  };\n\n  return { update, loading, error };\n};\n\nexport const useEntityDelete = () => {\n  const [loading, setLoading] = useState(false);\n  const [error, setError] = useState<string | null>(null);\n\n  const deleteEntity = (entityId: string) => {\n    setLoading(true);\n    return apiFetch<any>(`/api/entities/${entityId}`, {\n      method: 'DELETE'\n    }).catch(err => {\n      setError(err.message);\n    }).finally(() => setLoading(false));\n  };\n\n  return { deleteEntity, loading, error };\n};
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+
+const apiFetch = async <T>(path: string, options?: RequestInit): Promise<T> => {
+  const token = getCookie('token');
+  const config = {
+    ...options,
+    headers: {
+      ...options?.headers,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  };
+  const response = await axios.get(path, config);
+  if (!response.status.toString().startsWith('2')) {
+    throw new ApiError(response.data);
+  }
+  return response.data;
+};
+
+const useAuth = () => {
+  const [state, setState] = useState({ user: null, loading: true });
+
+  const login = async (email: string, password: string) => {
+    const response = await apiFetch('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    setUser(response.user);
+  };
+
+  const register = async (email: string, password: string, name: string) => {
+    const response = await apiFetch('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, name }),
+    });
+    setUser(response.user);
+  };
+
+  const logout = async () => {
+    await apiFetch('/api/auth/logout', { method: 'POST' });
+    setUser(null);
+  };
+
+  const refreshToken = async () => {
+    const response = await apiFetch('/api/auth/refresh');
+    setUser(response.user);
+  };
+
+  return { ...state, login, register, logout, refreshToken };
+};
+
+const useEntityList = (filters?) => {
+  const [entities, setEntities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchEntities = async () => {
+      try {
+        const data = await apiFetch(`/api/entities${filters ? '?' + new URLSearchParams(filters) : ''}`);
+        setEntities(data);
+      } catch (e) {
+        setError(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEntities();
+  }, [filters]);
+
+  return { entities, loading, error };
+};
+
+const useEntityCreate = () => {...};
+const useEntityUpdate = () => {...};
+const useEntityDelete = () => {...};
+
+export { apiFetch, useAuth, useEntityList, useEntityCreate, useEntityUpdate, useEntityDelete };

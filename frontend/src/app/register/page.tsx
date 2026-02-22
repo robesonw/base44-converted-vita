@@ -1,1 +1,25 @@
-import React, { useState } from 'react';\nimport { useAuthContext } from '@/contexts/AuthContext';\n\nconst RegisterPage = () => {\n  const { register } = useAuthContext();\n  const [email, setEmail] = useState('');\n  const [name, setName] = useState('');\n  const [password, setPassword] = useState('');\n  const [error, setError] = useState('');\n\n  const handleSubmit = async (event: React.FormEvent) => {\n    event.preventDefault();\n    try {\n      await register(email, password, name);\n    } catch (err) {\n      setError('Registration failed');\n    }\n  };\n\n  return (\n    <div>\n      <h1>Register</h1>\n      <form onSubmit={handleSubmit}>\n        <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Name" required />\n        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" required />\n        <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" required />\n        <button type="submit">Register</button>\n        {error && <p>{error}</p>}\n      </form>\n      <a href="/login">Login</a>\n    </div>\n  );\n};\n\nexport default RegisterPage;
+import React, { useState } from 'react';
+import { useAuthContext } from '@/contexts/AuthContext';
+
+const RegisterPage = () => {
+  const { register } = useAuthContext();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await register(email, password, name);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+      <button type="submit">Register</button>
+    </form>
+  );
+};
+
+export default RegisterPage;

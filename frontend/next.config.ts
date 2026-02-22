@@ -1,1 +1,8 @@
-import { defineConfig } from 'next';\n\nexport default defineConfig({\n  reactStrictMode: true,\n  env: {\n    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,\n  }\n});
+import { defineConfig } from 'next';
+
+export default defineConfig({
+  reactStrictMode: true,
+  experimental: {
+    appDir: true,
+  },
+});

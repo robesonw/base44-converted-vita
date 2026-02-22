@@ -1,20 +1,20 @@
 import { PrismaClient } from '@prisma/client';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminUser = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: process.env.SEED_ADMIN_EMAIL,
-      passwordHash: await bcrypt.hash('adminpass', 12),
-      role: 'admin'
-    }
+      passwordHash: await bcrypt.hash('admin_password', 12), // Default password for seed
+      role: 'admin',
+    },
   });
-  console.log({ adminUser });
 }
 
 main()
-  .catch((e) => console.error(e))
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  .catch(e => console.error(e))
+  .finally(async () => await prisma.$disconnect());
